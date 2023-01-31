@@ -4,7 +4,7 @@ try:
     bot = Bot()
     bot.land_first_page()
     bot.select_offer_field("cybersécurité")
-    bot.select_offer_place("ile de")
+    bot.select_offer_place("ile de France")
     bot.apply_filtration()
     bot.report_offers()
 except Exception as e:
