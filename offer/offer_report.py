@@ -2,6 +2,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from prettytable import PrettyTable
 import xlsxwriter
+import csv
 import os
 
 class OfferReport:
@@ -9,10 +10,11 @@ class OfferReport:
         self.driver = driver
         self.offer_boxes = []
         self.offer_box_attributes = []
+        self.nombre_total_offres = 0
 
     def pull_offer_boxes(self):
         self.offer_boxes = self.driver.find_elements(By.CSS_SELECTOR, 'li[class~="tw-mb-6"]')
-        print(len(self.offer_boxes))
+        self.nombre_total_offres = self.nombre_total_offres + len(self.offer_boxes)
         self.pull_offer_box_attributes()
 
     def pull_offer_box_attributes(self):
@@ -30,10 +32,10 @@ class OfferReport:
             field_names = ["Nom Entreprise","Intitulé Poste","Lieu"]
         )
         table.add_rows(self.offer_box_attributes)
+        print(f"\nNombre total d'offres: {self.nombre_total_offres}")
         print(table)
 
     def get_offer_xlsx_report(self):
-        self.offer_box_attributes.insert(0,["Nom Entreprise","Intitulé Poste","Lieu"])
         wb = xlsxwriter.Workbook("Scrapped_offers.xlsx")
         ws = wb.add_worksheet()
         row = 0
@@ -47,4 +49,10 @@ class OfferReport:
 
         wb.close()
         os.system("Scrapped_offers.xlsx")
+
+    def get_offer_csv_report(self):
+        self.offer_box_attributes.insert(0, ["Nom Entreprise", "Intitulé Poste", "Lieu"])
+        with open("Scrapped_offers.csv", "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(self.offer_box_attributes)
 

@@ -12,7 +12,7 @@ class Offer(webdriver.Chrome):
         chrome_options.add_experimental_option("detach", True)
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
         super(Offer, self).__init__(options=chrome_options)
-        self.implicitly_wait(50)
+        self.implicitly_wait(30)
         self.maximize_window()
 
     def land_first_page(self):
@@ -35,29 +35,52 @@ class Offer(webdriver.Chrome):
 
     def apply_filtration(self):
         filtration = OfferFiltration(driver=self)
-        filtration.select_period('w')
+        period = ''
+
+        while period == '':
+            selected_option = input("Entrez le chiffre correspondant à la period des offres pour lesquelles vous souhaitez collecter des informations: \n"
+                                    "1.Dernières 24 heures \n"
+                                    "2.Depuis 3 jours \n"
+                                    "3.Depuis 1 semaine \n"
+                                    "4.Depuis 1 mois \n"
+                                    "Votre choix: "
+                                )
+            if selected_option == '1':
+                period = 'h'
+            if selected_option == '2':
+                period = 'd'
+            if selected_option == '3':
+                period = 'w'
+            if selected_option == '4':
+                period = 'm'
+
+
+        filtration.select_period(period)
+        print('\nScrapping en cours ...')
 
     def report_offers(self):
 
         report = OfferReport(driver=self)
 
-        pagination_section = self.find_element(By.ID, 'pagin')
-        max_page_num = pagination_section.find_element(By.CSS_SELECTOR, 'ul > li:nth-last-child(2)').get_attribute("data-value")
+        try:
+            pagination_section = self.find_element(By.ID, 'pagin')
+            max_page_num = pagination_section.find_element(By.CSS_SELECTOR, 'ul > li:nth-last-child(2)').get_attribute("data-value")
 
-        print("max_page_num",max_page_num)
-        print("page", 1)
-        report.pull_offer_boxes()
+            report.pull_offer_boxes()
 
-        for i in range(2,int(max_page_num)+1):
-            print("page",i)
-            page_num = pagination_section.find_element(By.CSS_SELECTOR, f'ul > li[data-value="{i}"')
-            page_num.click()
-            time.sleep(10)
+            for i in range(2,int(max_page_num)+1):
+                page_num = pagination_section.find_element(By.CSS_SELECTOR, f'ul > li[data-value="{i}"')
+                page_num.click()
+                time.sleep(10)
+                report.pull_offer_boxes()
+        except:
             report.pull_offer_boxes()
 
 
         report.get_offer_console_report()
+        report.get_offer_csv_report()
         report.get_offer_xlsx_report()
+
 
 
 
